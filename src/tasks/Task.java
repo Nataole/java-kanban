@@ -1,4 +1,6 @@
-    import java.util.Objects;
+package tasks;
+
+import java.util.Objects;
 
     public class Task {
 

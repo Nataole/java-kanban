@@ -1,7 +1,15 @@
+package manager;
+
+import tasks.Epic;
+import tasks.Status;
+import tasks.Subtask;
+import tasks.Task;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 public class TaskManager {
     private int nextId = 1;
@@ -168,6 +176,10 @@ public class TaskManager {
         boolean allDone = true;
 
         for (Subtask subtask : epicSubtasks) {
+            if (subtask.getStatus() == Status.IN_PROGRESS) {
+                epic.setStatus(Status.IN_PROGRESS);
+                return;
+            }
             if (subtask.getStatus() != Status.NEW) {
                 allNew = false;
             }
