@@ -37,5 +37,18 @@ import java.util.List;
                     ", subtaskIds=" + subtaskIds +
                     '}';
         }
+        @Override
+        public Epic copy() {
+            Epic copy = new Epic(this.title, this.description);
+            copy.setId(this.id);
+            copy.setStatus(this.status);
+
+            // сохраняем список подзадач (чтобы копия эпика была корректной)
+            for (Integer subId : this.getSubtaskIds()) {
+                copy.addSubtaskId(subId);
+            }
+            return copy;
+        }
+
     }
 

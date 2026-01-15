@@ -14,6 +14,11 @@ import java.util.Objects;
             this.description = description;
             this.status = status;
         }
+        public Task copy() {
+            Task copy = new Task(this.title, this.description, this.status);
+            copy.setId(this.id);
+            return copy;
+        }
 
         public int getId() {
             return id;
