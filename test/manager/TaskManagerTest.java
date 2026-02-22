@@ -1,4 +1,5 @@
 package manager;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tasks.Epic;
@@ -84,6 +85,7 @@ class TaskManagerTest {
         Epic fromManager = manager.getEpicById(epic.getId());
         assertTrue(fromManager.getSubtaskIds().isEmpty(), "После удаления подзадачи ее id не должен оставаться в эпике");
     }
+
     @Test
     void deleteAllSubtasksClearsSubtaskIdsInEpics() {
         Epic epic = manager.createEpic(new Epic("E", "ED"));

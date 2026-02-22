@@ -42,6 +42,7 @@ class HistoryManagerTest {
         assertEquals(e.getId(), history.get(1).getId());
         assertEquals(s.getId(), history.get(2).getId());
     }
+
     @Test
     void historyDoesNotStoreDuplicates() {
         Task t = manager.createTask(new Task("T", "D", Status.NEW));
@@ -80,6 +81,7 @@ class HistoryManagerTest {
         List<Task> history = manager.getHistory();
         assertTrue(history.isEmpty(), "После удаления эпика из истории должны исчезнуть эпик и его подзадачи");
     }
+
     @Test
     void deleteAllTasksRemovesTasksFromHistory() {
         Task t1 = manager.createTask(new Task("T1", "D1", Status.NEW));
