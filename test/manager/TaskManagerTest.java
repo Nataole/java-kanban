@@ -73,4 +73,26 @@ class TaskManagerTest {
         assertNotEquals(created1.getId(), created2.getId(),
                 "Задачи с ручным id и сгенерированным id не должны конфликтовать");
     }
+
+    @Test
+    void deletingSubtaskRemovesItsIdFromEpic() {
+        Epic epic = manager.createEpic(new Epic("E", "ED"));
+        Subtask s = manager.createSubtask(new Subtask("S", "SD", Status.NEW, epic.getId()));
+
+        manager.deleteSubtaskById(s.getId());
+
+        Epic fromManager = manager.getEpicById(epic.getId());
+        assertTrue(fromManager.getSubtaskIds().isEmpty(), "После удаления подзадачи ее id не должен оставаться в эпике");
+    }
+    @Test
+    void deleteAllSubtasksClearsSubtaskIdsInEpics() {
+        Epic epic = manager.createEpic(new Epic("E", "ED"));
+        manager.createSubtask(new Subtask("S1", "D1", Status.NEW, epic.getId()));
+        manager.createSubtask(new Subtask("S2", "D2", Status.NEW, epic.getId()));
+
+        manager.deleteAllSubtasks();
+
+        Epic fromManager = manager.getEpicById(epic.getId());
+        assertTrue(fromManager.getSubtaskIds().isEmpty(), "После deleteAllSubtasks список id у эпика должен быть пустым");
+    }
 }
