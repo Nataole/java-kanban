@@ -80,10 +80,8 @@ public class InMemoryHistoryManager implements HistoryManager {
             tail = prev;
             return;
         }
-            next.prev = prev;
-        }
-
-    
+        next.prev = prev;
+    }
 
 
     private List<Task> getTasks() {
