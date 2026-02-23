@@ -78,14 +78,12 @@ public class InMemoryHistoryManager implements HistoryManager {
 
         if (next == null) {
             tail = prev;
-        } else {
+            return;
+        }
             next.prev = prev;
         }
 
-        node.prev = null;
-        node.next = null;
-        node.task = null;
-    }
+    
 
 
     private List<Task> getTasks() {
