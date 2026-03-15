@@ -52,9 +52,20 @@ public class InMemoryTaskManager implements TaskManager {
         return task;
     }
 
+    private int generateIdIfNeeded(int id) {
+        if (id != 0) {
+            if (tasks.containsKey(id) || epics.containsKey(id) || subtasks.containsKey(id)) {
+                throw new IllegalArgumentException("ID уже занят: " + id);
+            }
+            nextId = Math.max(nextId, id + 1);
+            return id;
+        }
+        return nextId++;
+    }
+
     @Override
     public Task createTask(Task task) {
-        task.setId(nextId++);
+        task.setId(generateIdIfNeeded(task.getId()));
         Task copy = task.copy();
         tasks.put(copy.getId(), copy);
         return task;
@@ -97,9 +108,10 @@ public class InMemoryTaskManager implements TaskManager {
         return epic;
     }
 
+
     @Override
     public Epic createEpic(Epic epic) {
-        epic.setId(nextId++);
+        epic.setId(generateIdIfNeeded(epic.getId()));
         Epic copy = epic.copy();
         epics.put(copy.getId(), copy);
         return epic;
@@ -162,7 +174,7 @@ public class InMemoryTaskManager implements TaskManager {
             throw new IllegalArgumentException("Подзадача не может быть своим же эпиком");
         }
 
-        subtask.setId(nextId++);
+        subtask.setId(generateIdIfNeeded(subtask.getId()));
         Subtask copy = subtask.copy();
         subtasks.put(copy.getId(), copy);
 
@@ -252,4 +264,5 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setStatus(Status.IN_PROGRESS);
         }
     }
+
 }
