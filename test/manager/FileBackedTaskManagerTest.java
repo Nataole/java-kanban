@@ -75,6 +75,10 @@ class FileBackedTaskManagerTest {
         Epic loadedEpic = loadedManager.getEpicById(epic.getId());
         Subtask loadedSubtask = loadedManager.getSubtaskById(subtask.getId());
 
+        assertNotNull(loadedTask, "Задача должна быть загружена");
+        assertNotNull(loadedEpic, "Эпик должен быть загружен");
+        assertNotNull(loadedSubtask, "Подзадача должна быть загружена");
+
         assertEquals(task.getTitle(), loadedTask.getTitle(),
                 "Название задачи должно сохраняться");
         assertEquals(task.getDescription(), loadedTask.getDescription(),
@@ -86,6 +90,8 @@ class FileBackedTaskManagerTest {
                 "Название эпика должно сохраняться");
         assertEquals(epic.getDescription(), loadedEpic.getDescription(),
                 "Описание эпика должно сохраняться");
+        assertEquals(Status.DONE, loadedEpic.getStatus(),
+                "Статус эпика должен пересчитываться по подзадачам");
 
         assertEquals(subtask.getTitle(), loadedSubtask.getTitle(),
                 "Название подзадачи должно сохраняться");

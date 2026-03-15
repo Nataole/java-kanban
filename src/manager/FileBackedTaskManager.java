@@ -14,7 +14,6 @@ import java.util.List;
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private final File file;
-    private boolean isLoading = false;
 
     public FileBackedTaskManager(File file) {
         super(Managers.getDefaultHistory());
@@ -22,9 +21,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private void save() {
-        if (isLoading) {
-            return;
-        }
         try {
             StringBuilder builder = new StringBuilder();
             builder.append("id,type,name,status,description,epic\n");
@@ -42,7 +38,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
 
             Files.writeString(file.toPath(), builder.toString());
-
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка сохранения в файл", e);
         }
@@ -50,19 +45,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private String toString(Task task) {
         TaskType type;
+        String epicId;
 
         if (task instanceof Epic) {
             type = TaskType.EPIC;
+            epicId = "";
         } else if (task instanceof Subtask) {
             type = TaskType.SUBTASK;
+            epicId = String.valueOf(((Subtask) task).getEpicId());
         } else {
             type = TaskType.TASK;
-        }
-
-        String epicId = "";
-
-        if (task instanceof Subtask) {
-            epicId = String.valueOf(((Subtask) task).getEpicId());
+            epicId = "";
         }
 
         return task.getId() + "," +
@@ -83,7 +76,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String description = fields[4];
 
         switch (type) {
-
             case TASK:
                 Task task = new Task(name, description, status);
                 task.setId(id);
@@ -102,13 +94,24 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 return subtask;
 
             default:
-                throw new IllegalArgumentException("Неизвестный тип задачи");
+                throw new ManagerSaveException("Неизвестный тип задачи в файле: " + type);
         }
+    }
+
+    private Task createTaskWithoutSave(Task task) {
+        return super.createTask(task);
+    }
+
+    private Epic createEpicWithoutSave(Epic epic) {
+        return super.createEpic(epic);
+    }
+
+    private Subtask createSubtaskWithoutSave(Subtask subtask) {
+        return super.createSubtask(subtask);
     }
 
     public static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
-        manager.isLoading = true;
 
         try {
             List<String> lines = Files.readAllLines(file.toPath());
@@ -117,9 +120,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 return manager;
             }
 
-            // задачи и эпики
             for (int i = 1; i < lines.size(); i++) {
-
                 String line = lines.get(i);
 
                 if (line.isBlank()) {
@@ -129,32 +130,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 Task task = fromString(line);
 
                 if (task instanceof Epic) {
-                    manager.createEpic((Epic) task);
-                } else if (!(task instanceof Subtask)) {
-                    manager.createTask(task);
+                    manager.createEpicWithoutSave((Epic) task);
+                } else if (task instanceof Subtask) {
+                    manager.createSubtaskWithoutSave((Subtask) task);
+                } else {
+                    manager.createTaskWithoutSave(task);
                 }
             }
-
-            // подзадачи
-            for (int i = 1; i < lines.size(); i++) {
-
-                String line = lines.get(i);
-
-                if (line.isBlank()) {
-                    continue;
-                }
-
-                Task task = fromString(line);
-
-                if (task instanceof Subtask) {
-                    manager.createSubtask((Subtask) task);
-                }
-            }
-
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка загрузки из файла", e);
-        } finally {
-            manager.isLoading = false;
         }
 
         return manager;
