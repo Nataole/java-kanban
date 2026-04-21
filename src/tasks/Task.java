@@ -1,6 +1,8 @@
 package tasks;
 
 import java.util.Objects;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class Task {
 
@@ -8,15 +10,23 @@ public class Task {
     protected String title;
     protected String description;
     protected Status status;
+    protected Duration duration;
+    protected LocalDateTime startTime;
 
     public Task(String title, String description, Status status) {
+        this(title, description, status, Duration.ZERO, null);
+    }
+
+    public Task(String title, String description, Status status, Duration duration, LocalDateTime startTime) {
         this.title = title;
         this.description = description;
         this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
     public Task copy() {
-        Task copy = new Task(this.title, this.description, this.status);
+        Task copy = new Task(this.title, this.description, this.status, this.duration, this.startTime);
         copy.setId(this.id);
         return copy;
     }
@@ -53,6 +63,29 @@ public class Task {
         this.status = status;
     }
 
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        if (startTime == null || duration == null) {
+            return null;
+        }
+        return startTime.plus(duration);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -75,5 +108,5 @@ public class Task {
                 ", status=" + status +
                 '}';
     }
-}
+   }
 

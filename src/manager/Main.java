@@ -5,6 +5,8 @@ import tasks.Status;
 import tasks.Subtask;
 import tasks.Task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Main {
@@ -14,8 +16,16 @@ public class Main {
         TaskManager manager = Managers.getDefault();
 
         // 1. Создаем две обычные задачи
-        Task task1 = manager.createTask(new Task("Задача 1", "Описание задачи 1", Status.NEW));
-        Task task2 = manager.createTask(new Task("Задача 2", "Описание задачи 2", Status.IN_PROGRESS));
+        Task task1 = manager.createTask(new Task("Задача 1",
+                "Описание задачи 1",
+                Status.NEW,
+                Duration.ofMinutes(30),
+                LocalDateTime.of(2026, 4, 1, 10, 0)));
+        Task task2 = manager.createTask(new Task("Задача 2",
+                "Описание задачи 2",
+                Status.IN_PROGRESS,
+                Duration.ofMinutes(45),
+                LocalDateTime.of(2026, 4, 1, 11, 0)));
 
         System.out.println("Созданы задачи:");
         System.out.println("  " + task1);
@@ -26,9 +36,27 @@ public class Main {
         Epic epic2 = manager.createEpic(new Epic("Эпик 2", "Описание эпика 2"));
 
         // 3. Создаем подзадачи
-        Subtask subtask1 = manager.createSubtask(new Subtask("Подзадача 1", "Описание подзадачи 1", Status.NEW, epic1.getId()));
-        Subtask subtask2 = manager.createSubtask(new Subtask("Подзадача 2", "Описание подзадачи 2", Status.NEW, epic1.getId()));
-        Subtask subtask3 = manager.createSubtask(new Subtask("Подзадача 3", "Описание подзадачи 3", Status.NEW, epic2.getId()));
+        Subtask subtask1 = manager.createSubtask(new Subtask(
+                "Подзадача 1",
+                "Описание подзадачи 1",
+                Status.NEW,
+                epic1.getId(),
+                Duration.ofMinutes(20),
+                LocalDateTime.of(2026, 4, 1, 12, 0)));
+        Subtask subtask2 = manager.createSubtask(new Subtask(
+                "Подзадача 2",
+                "Описание подзадачи 2",
+                Status.NEW,
+                epic1.getId(),
+                Duration.ofMinutes(30),
+                LocalDateTime.of(2026, 4, 1, 13, 0)));
+        Subtask subtask3 = manager.createSubtask(new Subtask(
+                "Подзадача 3",
+                "Описание подзадачи 3",
+                Status.NEW,
+                epic2.getId(),
+                Duration.ofMinutes(25),
+                LocalDateTime.of(2026, 4, 1, 14, 0)));
 
         System.out.println("Созданы подзадачи:");
         System.out.println("  " + subtask1);
@@ -38,6 +66,11 @@ public class Main {
         // 4. Проверяем статусы эпиков
         System.out.println("Статус эпика 1: " + manager.getEpicById(epic1.getId()).getStatus() + " (должен быть NEW)");
         System.out.println("Статус эпика 2: " + manager.getEpicById(epic2.getId()).getStatus() + " (должен быть NEW)");
+
+        System.out.println("Время начала эпика 1: " + manager.getEpicById(epic1.getId()).getStartTime());
+        System.out.println("Продолжительность эпика 1: " + manager.getEpicById(epic1.getId()).getDuration());
+        System.out.println("Время окончания эпика 1: " + manager.getEpicById(epic1.getId()).getEndTime());
+
 
         // 5. Обновляем подзадачи
         System.out.println("Обновление подзадач");
@@ -64,7 +97,13 @@ public class Main {
             System.out.println("  " + subtask);
         }
 
-        // 8. Удаляем задачи
+        // 8. Проверяем приоритет
+        System.out.println("Задачи в порядке приоритета:");
+        for (Task task : manager.getPrioritizedTasks()) {
+            System.out.println("  " + task);
+        }
+
+        // 9. Удаляем задачи
         manager.deleteTaskById(task1.getId());
         manager.deleteEpicById(epic2.getId());
 
