@@ -1,58 +1,65 @@
 package manager;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tasks.Epic;
 import tasks.Status;
-import tasks.Subtask;
 import tasks.Task;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class InMemoryTaskManagerBasicTest {
+class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
 
-    private TaskManager manager;
-
-    @BeforeEach
-    void setUp() {
-        manager = Managers.getDefault();
+    @Override
+    protected InMemoryTaskManager createManager() {
+        return new InMemoryTaskManager(Managers.getDefaultHistory());
     }
 
     @Test
-    void addAndFindTaskById() {
-        Task created = manager.createTask(new Task("T", "D", Status.NEW));
-        Task found = manager.getTaskById(created.getId());
+    void shouldDetectOverlappingTasks() {
+        InMemoryTaskManager manager = createManager();
 
-        assertNotNull(found, "Задача должна находиться по id");
-        assertEquals(created, found, "Найденная задача должна совпадать по id");
+        Task task1 = new Task(
+                "Задача 1",
+                "Описание 1",
+                Status.NEW,
+                Duration.ofMinutes(60),
+                LocalDateTime.of(2026, 4, 1, 10, 0)
+        );
+
+        Task task2 = new Task(
+                "Задача 2",
+                "Описание 2",
+                Status.NEW,
+                Duration.ofMinutes(30),
+                LocalDateTime.of(2026, 4, 1, 10, 30)
+        );
+
+        assertTrue(manager.isTasksOverlap(task1, task2));
     }
 
     @Test
-    void addAndFindEpicAndSubtaskById() {
-        Epic epic = manager.createEpic(new Epic("E", "ED"));
-        Subtask sub = manager.createSubtask(new Subtask("S", "SD", Status.NEW, epic.getId()));
+    void shouldNotDetectOverlapWhenTasksDoNotIntersect() {
+        InMemoryTaskManager manager = createManager();
 
-        assertNotNull(manager.getEpicById(epic.getId()), "Эпик должен находиться по id");
-        assertNotNull(manager.getSubtaskById(sub.getId()), "Подзадача должна находиться по id");
-    }
+        Task task1 = new Task(
+                "Задача 1",
+                "Описание 1",
+                Status.NEW,
+                Duration.ofMinutes(60),
+                LocalDateTime.of(2026, 4, 1, 10, 0)
+        );
 
-    @Test
-    void createSubtaskForMissingEpicReturnsNull() {
-        Subtask sub = manager.createSubtask(new Subtask("S", "SD", Status.NEW, 9999));
-        assertNull(sub, "Если эпика нет, подзадача не должна создаваться");
-    }
+        Task task2 = new Task(
+                "Задача 2",
+                "Описание 2",
+                Status.NEW,
+                Duration.ofMinutes(30),
+                LocalDateTime.of(2026, 4, 1, 11, 0)
+        );
 
-    @Test
-    void epicStatusBecomesDoneWhenAllSubtasksDone() {
-        Epic epic = manager.createEpic(new Epic("E", "ED"));
-        Subtask s1 = manager.createSubtask(new Subtask("S1", "D1", Status.NEW, epic.getId()));
-        Subtask s2 = manager.createSubtask(new Subtask("S2", "D2", Status.NEW, epic.getId()));
-
-        s1.setStatus(Status.DONE);
-        s2.setStatus(Status.DONE);
-        manager.updateSubtask(s1);
-        manager.updateSubtask(s2);
-
-        assertEquals(Status.DONE, manager.getEpicById(epic.getId()).getStatus(), "Эпик должен стать DONE");
+        assertFalse(manager.isTasksOverlap(task1, task2));
     }
 }
+

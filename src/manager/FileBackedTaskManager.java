@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
@@ -23,7 +25,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private void save() {
         try {
             StringBuilder builder = new StringBuilder();
-            builder.append("id,type,name,status,description,epic\n");
+            builder.append("id,type,name,status,description,epic,startTime,duration\n");
 
             for (Task task : getAllTasks()) {
                 builder.append(toString(task)).append("\n");
@@ -58,26 +60,40 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             epicId = "";
         }
 
+        String startTime = task.getStartTime() == null ? "" : task.getStartTime().toString();
+        String duration = task.getDuration() == null ? "" : String.valueOf(task.getDuration().toMinutes());
+
         return task.getId() + "," +
                 type + "," +
                 task.getTitle() + "," +
                 task.getStatus() + "," +
                 task.getDescription() + "," +
-                epicId;
+                epicId + "," +
+                startTime + "," +
+                duration;
     }
 
     private static Task fromString(String value) {
-        String[] fields = value.split(",");
+        String[] fields = value.split(",", -1);
 
         int id = Integer.parseInt(fields[0]);
         TaskType type = TaskType.valueOf(fields[1]);
         String name = fields[2];
         Status status = Status.valueOf(fields[3]);
         String description = fields[4];
+        String epicField = fields[5];
+
+        LocalDateTime startTime = fields.length > 6 && !fields[6].isBlank()
+                ? LocalDateTime.parse(fields[6])
+                : null;
+
+        Duration duration = fields.length > 7 && !fields[7].isBlank()
+                ? Duration.ofMinutes(Long.parseLong(fields[7]))
+                : Duration.ZERO;
 
         switch (type) {
             case TASK:
-                Task task = new Task(name, description, status);
+                Task task = new Task(name, description, status, duration, startTime);
                 task.setId(id);
                 return task;
 
@@ -85,11 +101,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 Epic epic = new Epic(name, description);
                 epic.setId(id);
                 epic.setStatus(status);
+                epic.setDuration(duration);
+                epic.setStartTime(startTime);
                 return epic;
 
             case SUBTASK:
-                int epicId = Integer.parseInt(fields[5]);
-                Subtask subtask = new Subtask(name, description, status, epicId);
+                int epicId = Integer.parseInt(epicField);
+                Subtask subtask = new Subtask(name, description, status, epicId, duration, startTime);
                 subtask.setId(id);
                 return subtask;
 
@@ -227,21 +245,42 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
 
-        Task task1 = manager.createTask(new Task("Задача 1", "Описание задачи 1", Status.NEW));
-        Task task2 = manager.createTask(new Task("Задача 2", "Описание задачи 2", Status.IN_PROGRESS));
+        Task task1 = manager.createTask(new Task(
+                "Задача 1",
+                "Описание задачи 1",
+                Status.NEW,
+                Duration.ofMinutes(30),
+                LocalDateTime.of(2026, 4, 1, 10, 0)));
+        Task task2 = manager.createTask(new Task("Задача 2",
+                "Описание задачи 2",
+                Status.IN_PROGRESS,
+                Duration.ofMinutes(45),
+                LocalDateTime.of(2026, 4, 1, 11, 0)));
 
         Epic epic1 = manager.createEpic(new Epic("Эпик 1", "Описание эпика 1"));
         Epic epic2 = manager.createEpic(new Epic("Эпик 2", "Описание эпика 2"));
 
         Subtask subtask1 = manager.createSubtask(
-                new Subtask("Подзадача 1", "Описание подзадачи 1", Status.NEW, epic1.getId())
-        );
+                new Subtask("Подзадача 1",
+                        "Описание подзадачи 1",
+                        Status.NEW,
+                        epic1.getId(),
+                        Duration.ofMinutes(20),
+                        LocalDateTime.of(2026, 4, 1, 12, 0)));
         Subtask subtask2 = manager.createSubtask(
-                new Subtask("Подзадача 2", "Описание подзадачи 2", Status.DONE, epic1.getId())
-        );
+                new Subtask("Подзадача 2",
+                        "Описание подзадачи 2",
+                        Status.DONE,
+                        epic1.getId(),
+                        Duration.ofMinutes(30),
+                        LocalDateTime.of(2026, 4, 1, 13, 0)));
         Subtask subtask3 = manager.createSubtask(
-                new Subtask("Подзадача 3", "Описание подзадачи 3", Status.IN_PROGRESS, epic2.getId())
-        );
+                new Subtask("Подзадача 3",
+                        "Описание подзадачи 3",
+                        Status.IN_PROGRESS,
+                        epic2.getId(),
+                        Duration.ofMinutes(25),
+                        LocalDateTime.of(2026, 4, 1, 14, 0)));
 
         System.out.println("Исходный менеджер:");
         System.out.println("Задачи: " + manager.getAllTasks());
