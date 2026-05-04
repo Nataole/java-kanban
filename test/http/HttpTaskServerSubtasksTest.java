@@ -1,0 +1,120 @@
+package http;
+
+import com.google.gson.Gson;
+import manager.InMemoryTaskManager;
+import manager.Managers;
+import manager.TaskManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import tasks.Epic;
+import tasks.Status;
+import tasks.Subtask;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class HttpTaskServerSubtasksTest {
+    private TaskManager manager;
+    private HttpTaskServer server;
+    private Gson gson;
+    private HttpClient client;
+
+    @BeforeEach
+    void setUp() throws IOException {
+        manager = new InMemoryTaskManager(Managers.getDefaultHistory());
+        server = new HttpTaskServer(manager);
+        gson = HttpTaskServer.getGson();
+        client = HttpClient.newHttpClient();
+        server.start();
+    }
+
+    @AfterEach
+    void tearDown() {
+        server.stop();
+    }
+
+    @Test
+    void shouldCreateSubtask() throws IOException, InterruptedException {
+        Epic epic = manager.createEpic(new Epic("Эпик", "Описание"));
+
+        Subtask subtask = new Subtask(
+                "Подзадача",
+                "Описание",
+                Status.NEW,
+                epic.getId(),
+                Duration.ofMinutes(20),
+                LocalDateTime.of(2026, 4, 1, 12, 0)
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/subtasks"))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(subtask)))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(201, response.statusCode());
+        assertEquals(1, manager.getAllSubtasks().size());
+    }
+
+    @Test
+    void shouldReturnNotFoundForSubtaskWithoutEpic() throws IOException, InterruptedException {
+        Subtask subtask = new Subtask(
+                "Подзадача",
+                "Описание",
+                Status.NEW,
+                999,
+                Duration.ofMinutes(20),
+                LocalDateTime.of(2026, 4, 1, 12, 0)
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/subtasks"))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(subtask)))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(404, response.statusCode());
+    }
+
+    @Test
+    void shouldGetSubtaskById() throws IOException, InterruptedException {
+        Epic epic = manager.createEpic(new Epic("Эпик", "Описание"));
+        Subtask subtask = manager.createSubtask(new Subtask("Подзадача", "Описание", Status.NEW, epic.getId()));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/subtasks/" + subtask.getId()))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+    }
+
+    @Test
+    void shouldDeleteSubtask() throws IOException, InterruptedException {
+        Epic epic = manager.createEpic(new Epic("Эпик", "Описание"));
+        Subtask subtask = manager.createSubtask(new Subtask("Подзадача", "Описание", Status.NEW, epic.getId()));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/subtasks/" + subtask.getId()))
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertEquals(0, manager.getAllSubtasks().size());
+    }
+}
+
