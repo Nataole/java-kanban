@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 
 public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
 
@@ -21,7 +22,7 @@ public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         try {
             if ("GET".equals(exchange.getRequestMethod())) {
-                sendText(exchange, gson.toJson(manager.getPrioritizedTasks()), 200);
+                sendText(exchange, gson.toJson(manager.getPrioritizedTasks()), HttpURLConnection.HTTP_OK);
             } else {
                 sendNotFound(exchange);
             }

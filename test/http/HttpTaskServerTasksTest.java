@@ -11,6 +11,7 @@ import tasks.Status;
 import tasks.Task;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -59,7 +60,7 @@ public class HttpTaskServerTasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(201, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_CREATED, response.statusCode());
         assertEquals(1, manager.getAllTasks().size());
         assertEquals("Задача", manager.getAllTasks().get(0).getTitle());
     }
@@ -81,7 +82,7 @@ public class HttpTaskServerTasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
     }
 
     @Test
@@ -93,7 +94,7 @@ public class HttpTaskServerTasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(404, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, response.statusCode());
     }
 
     @Test
@@ -121,7 +122,7 @@ public class HttpTaskServerTasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(406, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_NOT_ACCEPTABLE, response.statusCode());
     }
 
     @Test
@@ -135,7 +136,7 @@ public class HttpTaskServerTasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
         assertEquals(0, manager.getAllTasks().size());
     }
 }

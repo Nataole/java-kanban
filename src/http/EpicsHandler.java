@@ -8,6 +8,7 @@ import tasks.Epic;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.net.HttpURLConnection;
 
 public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
     private final TaskManager manager;
@@ -48,7 +49,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         String[] pathParts = path.split("/");
 
         if (pathParts.length == 2) {
-            sendText(exchange, gson.toJson(manager.getAllEpics()), 200);
+            sendText(exchange, gson.toJson(manager.getAllEpics()), HttpURLConnection.HTTP_OK);
             return;
         }
 
@@ -61,7 +62,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                 return;
             }
 
-            sendText(exchange, gson.toJson(epic), 200);
+            sendText(exchange, gson.toJson(epic), HttpURLConnection.HTTP_OK);
             return;
         }
 
@@ -74,7 +75,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                 return;
             }
 
-            sendText(exchange, gson.toJson(manager.getSubtasksByEpicId(id)), 200);
+            sendText(exchange, gson.toJson(manager.getSubtasksByEpicId(id)), HttpURLConnection.HTTP_OK);
             return;
         }
 
@@ -97,7 +98,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
             return;
         }
 
-        sendText(exchange, gson.toJson(result), 201);
+        sendText(exchange, gson.toJson(result), HttpURLConnection.HTTP_CREATED);
     }
 
     private void handleDelete(HttpExchange exchange, String path) throws IOException {
@@ -117,7 +118,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         }
 
         manager.deleteEpicById(id);
-        sendText(exchange, "{\"message\":\"Эпик удалён\"}", 200);
+        sendText(exchange, "{\"message\":\"Эпик удалён\"}", HttpURLConnection.HTTP_OK);
     }
 }
 

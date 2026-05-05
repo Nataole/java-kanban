@@ -8,6 +8,7 @@ import tasks.Subtask;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.net.HttpURLConnection;
 
 public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
     private final TaskManager manager;
@@ -48,7 +49,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
         String[] pathParts = path.split("/");
 
         if (pathParts.length == 2) {
-            sendText(exchange, gson.toJson(manager.getAllSubtasks()), 200);
+            sendText(exchange, gson.toJson(manager.getAllSubtasks()),  HttpURLConnection.HTTP_OK);
             return;
         }
 
@@ -61,7 +62,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                 return;
             }
 
-            sendText(exchange, gson.toJson(subtask), 200);
+            sendText(exchange, gson.toJson(subtask),  HttpURLConnection.HTTP_OK);
             return;
         }
 
@@ -84,7 +85,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
             return;
         }
 
-        sendText(exchange, gson.toJson(result), 201);
+        sendText(exchange, gson.toJson(result),  HttpURLConnection.HTTP_CREATED);
     }
 
     private void handleDelete(HttpExchange exchange, String path) throws IOException {
@@ -104,7 +105,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
         }
 
         manager.deleteSubtaskById(id);
-        sendText(exchange, "{\"message\":\"Подзадача удалена\"}", 200);
+        sendText(exchange, "{\"message\":\"Подзадача удалена\"}",  HttpURLConnection.HTTP_OK);
     }
 }
 

@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.net.HttpURLConnection;
 
 
 public class BaseHttpHandler {
@@ -16,15 +17,15 @@ public class BaseHttpHandler {
     }
 
     protected void sendNotFound(HttpExchange exchange) throws IOException {
-        sendText(exchange, "{\"error\":\"Объект не найден\"}", 404);
+        sendText(exchange, "{\"error\":\"Объект не найден\"}",  HttpURLConnection.HTTP_NOT_FOUND);
     }
 
     protected void sendHasInteractions(HttpExchange exchange) throws IOException {
-        sendText(exchange, "{\"error\":\"Задача пересекается\"}", 406);
+        sendText(exchange, "{\"error\":\"Задача пересекается\"}", HttpURLConnection.HTTP_NOT_ACCEPTABLE);
     }
 
     protected void sendServerError(HttpExchange exchange) throws IOException {
-        sendText(exchange, "{\"error\":\"Ошибка сервера\"}", 500);
+        sendText(exchange, "{\"error\":\"Ошибка сервера\"}", HttpURLConnection.HTTP_INTERNAL_ERROR);
     }
 }
 

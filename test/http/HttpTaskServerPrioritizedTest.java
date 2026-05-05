@@ -10,6 +10,7 @@ import tasks.Status;
 import tasks.Task;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -54,7 +55,7 @@ public class HttpTaskServerPrioritizedTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
     }
 }
 

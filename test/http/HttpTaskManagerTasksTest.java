@@ -12,6 +12,7 @@ import java.net.http.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.net.HttpURLConnection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,6 +37,7 @@ public class HttpTaskManagerTasksTest {
     void tearDown() {
         server.stop();
     }
+
     @Test
     void shouldAddTaskViaHttp() throws Exception {
         Task task = new Task(
@@ -55,7 +57,7 @@ public class HttpTaskManagerTasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(201, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_CREATED, response.statusCode());
 
         List<Task> tasks = manager.getAllTasks();
         assertEquals(1, tasks.size());
@@ -65,49 +67,49 @@ public class HttpTaskManagerTasksTest {
 
     @Test
     void shouldReturnTasks() throws Exception {
-                 manager.createTask(new Task(
-                    "Task 1",
-                    "Desc",
-                    Status.NEW,
-                    Duration.ofMinutes(5),
-                    LocalDateTime.now()
-            ));
+        manager.createTask(new Task(
+                "Task 1",
+                "Desc",
+                Status.NEW,
+                Duration.ofMinutes(5),
+                LocalDateTime.now()
+        ));
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/tasks"))
-                    .GET()
-                    .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/tasks"))
+                .GET()
+                .build();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            assertEquals(200, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
 
-            Task[] tasks = gson.fromJson(response.body(), Task[].class);
-            assertEquals(1, tasks.length);
+        Task[] tasks = gson.fromJson(response.body(), Task[].class);
+        assertEquals(1, tasks.length);
     }
 
-        @Test
-        void shouldReturnTaskById() throws Exception {
-            Task task = manager.createTask(new Task(
-                    "Task 1",
-                    "Desc",
-                    Status.NEW,
-                    Duration.ofMinutes(5),
-                    LocalDateTime.now()
-            ));
+    @Test
+    void shouldReturnTaskById() throws Exception {
+        Task task = manager.createTask(new Task(
+                "Task 1",
+                "Desc",
+                Status.NEW,
+                Duration.ofMinutes(5),
+                LocalDateTime.now()
+        ));
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/tasks/" + task.getId()))
-                    .GET()
-                    .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/tasks/" + task.getId()))
+                .GET()
+                .build();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            assertEquals(200, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
 
-            Task returned = gson.fromJson(response.body(), Task.class);
-            assertEquals(task.getId(), returned.getId());
-        }
+        Task returned = gson.fromJson(response.body(), Task.class);
+        assertEquals(task.getId(), returned.getId());
+    }
 
     @Test
     void shouldDeleteTask() throws Exception {
@@ -126,7 +128,7 @@ public class HttpTaskManagerTasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
         assertTrue(manager.getAllTasks().isEmpty());
     }
 
@@ -158,7 +160,7 @@ public class HttpTaskManagerTasksTest {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
 
-        assertEquals(406, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_NOT_ACCEPTABLE, response.statusCode());
         assertEquals(1, manager.getAllTasks().size());
     }
 }

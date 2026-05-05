@@ -12,6 +12,7 @@ import tasks.Status;
 import tasks.Subtask;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -61,7 +62,7 @@ public class HttpTaskServerSubtasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(201, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_CREATED, response.statusCode());
         assertEquals(1, manager.getAllSubtasks().size());
     }
 
@@ -83,7 +84,7 @@ public class HttpTaskServerSubtasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(404, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, response.statusCode());
     }
 
     @Test
@@ -98,7 +99,7 @@ public class HttpTaskServerSubtasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
     }
 
     @Test
@@ -113,7 +114,7 @@ public class HttpTaskServerSubtasksTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
         assertEquals(0, manager.getAllSubtasks().size());
     }
 }
